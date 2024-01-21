@@ -1,18 +1,33 @@
-import { Observable, from } from 'rxjs';
+import { fromEvent } from "rxjs";
 
-let numbers = [1, 5, 10]
-let source = from(numbers);
+interface IMovie {
+    title: string
+}
 
-let source1 = new Observable()
+const button = document.getElementById('button')
+const output = document.getElementById('output')
+const click = fromEvent(button, 'click');
 
-const myObserver = {
-    next: (value: number) => console.log('value ', value),
+
+const load = (url: string): void => {
+    const xhr = new XMLHttpRequest()
+    xhr.addEventListener('load', () => {
+        let movies = JSON.parse(xhr.responseText)
+
+        movies.forEach((movie: IMovie) => {
+            const div = document.createElement('div')
+            div.innerText = movie.title
+            output.appendChild(div)
+        })
+    })
+
+    xhr.open('GET', url)
+    xhr.send()
+}
+
+
+click.subscribe({
+    next: () => load('./movies.json'),
     error: (error: Error) => console.log('error ', error),
-    complete: () => console.log('complete json')
-}
-
-function component() {
-    source.subscribe(myObserver)
-}
-
-component()
+    complete: () => console.log('complete')
+})
